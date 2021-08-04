@@ -1,0 +1,7 @@
+**.DS_Store
+download/*
+**/__pycache__/
+external_analyzers/appinspector/appinspector_results/*
+log_errors.txt
+flask_server/static/data/*
+configurations.json

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+
+<head>
+    <meta content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>PackageDNA</title>
+    <meta name="description" content="Home - PackageDNA">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/packagedna.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sticky-footer.css') }}">
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
+        <div class="container"><a class="navbar-brand logo title_brand" href="/" style="color: rgb(38,28,119);font-weight: bold;">PackageDNA</a><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div
+                class="collapse navbar-collapse" id="navcol-1">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item" role="dashboard"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item" role="compare"><a class="nav-link active" href="/compare">Compare Packages</a></li>
+                    <li class="nav-item" role="about"><a class="nav-link active" href="#">About Us</a></li>
+                </ul>
+        </div>
+        </div>
+    </nav>
+    <main class="page">
+        <section class="clean-block about-us">
+            <div class="container">
+                <div class="block-heading">
+                    <h2 class="text-info">Package: {{ package_name }}</h2>
+                    <select id="select_pkg">
+                        <option value="0">All versions</option>
+                        {% for key in data_keys %}
+                            <option value={{ key | replace('.', '-') }}>{{ key }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                    {% for row in data %}
+
+                    {% if row != 'changes_pkg' %}
+
+                    <div class="row justify-content-center dinamic_div" id="{{ row | replace('.', '-')}}" style="display: block;">
+                        <div class="col" >
+                            <h3 class="text-info">{{ data[row]['name'] + " " + row }}</h3>
+                        </div>
+
+                        <div class="col col_content" >
+                            <h4 class="title_category">Metadata</h4>
+                            <p class="text-description">
+                                <strong>Author: </strong>{{ data[row]['author'] }}<br/>
+                                <strong>Email: </strong>{{ data[row]['author_email'] }}<br/>
+                                <strong>Date: </strong>{{ data[row]['date'] }}<br/>
+                                <strong>License: </strong>{{ data[row]['license'] }}<br/>
+                                <strong>Home Page: </strong>{{ data[row]['home_page'] }}<br/>
+                            </p>
+                        </div>
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>Hash Files: </h4>
+                            <p class='text-description'>
+                                {% for hash in data[row]['hash_files'] %}
+                                    <strong>{{ hash }}: </strong>
+                                    {{ data[row]['hash_files'][hash] }}<br/>
+                                {% endfor %}
+                            </p>
+                        </div>
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>Data Collected: </h4>
+                            <p class='text-description'>
+
+                            {% for key in data[row]['data_collected'] %}
+                                    <strong>{{ key }}</strong>
+
+                                        <br/>
+                                        {% for row in data[row]['data_collected'][key] %}
+                                            {{ row|e }}<br/>
+                                        {% endfor %}
+                                        <br/>
+                            {% endfor %}
+                            </p>
+                        </div>
+
+
+                        {% if data[row]['extra']['programming_language'] == 'python' %}
+                        <div class='col col_content'>
+                            <h4 class="title_category">Dangerous Functions: </h4>
+                            {% if data[row]['dangerous_function'] | length > 0 %}
+                                {% for dang_function in data[row]['dangerous_function'] %}
+                                    {% if dang_function == 'dangerous_functions' %}
+                                        <p class="text-description">
+                                        <strong>{{ dang_function }}: </strong><br/>
+                                        {% for line in data[row]['dangerous_function'][dang_function] %}
+                                            {{ line }}<br/>
+                                        {% endfor %}
+                                        </p>
+                                    {% elif dang_function == 'file'  %}
+                                        <p class="text-description">
+                                        <strong>{{ dang_function }}: </strong>{{ data[row]['dangerous_function'][dang_function] }}</p>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-description">Not data Found</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if data[row]['extra']['programming_language'] == 'python' %}
+                        <div class='col col_content'>
+                            <h4 class="title_category">Bandit (Code Review): </h4>
+                                {% if data[row]['bandit']['results'] | length > 0 %}
+                                    {% for key in data[row]['bandit']['results'] %}
+                                        {% if data[row]['bandit']['results'][key]['issue_severity'] == 'HIGH'  or data[row]['bandit']['results'][key]['issue_severity'] == 'MEDIUM' %}
+                                        <div class="text-description">
+                                            <strong>Filename: </strong>{{ data[row]['bandit']['results'][key]['filename'] }}<br/>
+                                            <strong>Issue Severity: </strong>
+                                            {% if data[row]['bandit']['results'][key]['issue_severity'] == 'HIGH' %}
+                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                            {% elif data[row]['bandit']['results'][key]['issue_severity'] == 'MEDIUM' %}
+                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                            {% endif %}
+                                            <strong>Issue Confidence: </strong>
+                                            {% if data[row]['bandit']['results'][key]['issue_confidence'] == 'HIGH' %}
+                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'MEDIUM' %}
+                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'LOW' %}
+                                                <span class="confidence_low">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                            {% endif %}
+                                            <strong>Issue: </strong>{{ data[row]['bandit']['results'][key]['issue_text'] }}<br/>
+                                            <strong>Line Number: </strong>{{ data[row]['bandit']['results'][key]['line_number'] }}<br/>
+                                            <strong>Test ID: </strong>{{ data[row]['bandit']['results'][key]['test_id'] }}<br/>
+                                            <strong>Test Name: </strong>{{ data[row]['bandit']['results'][key]['test_name'] }}<br/>
+                                            <strong>Reference: </strong><a href="{{ data[row]['bandit']['results'][key]['more_info'] }}" target="_blank">{{ data[row]['bandit']['results'][key]['more_info'] }}</a><br/>
+                                            <strong>Code: </strong>{{ data[row]['bandit']['results'][key]['code'] }}<br/>
+                                        </div><br/>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-description">Not data Found</p>
+                                {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if data[row]['extra']['programming_language'] == 'ruby' %}
+                        <div class='col col_content'>
+                            <h4 class="title_category">Rubocop (Code Review): </h4>
+
+                            {% if data[row]['rubocop'] | length > 0 %}
+                                <p class="text-description">
+                                    {% for key in data[row]['rubocop'] %}
+                                        <strong>File: </strong>{{data[row]['rubocop'][key]['filename']}}<br/>
+                                        <strong>Rule name: </strong>{{data[row]['rubocop'][key]['cop_name']}}<br/>
+                                        <strong>Message: </strong>{{data[row]['rubocop'][key]['message']|safe}}<br/>
+                                        <strong>Severity: </strong>
+                                            {% if data[row]['rubocop'][key]['severity'] == 'warning' %}
+                                                <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                            {% elif data[row]['rubocop'][key]['severity']  == 'fatal'  %}
+                                                <span class="severity_critical">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                            {% elif data[row]['rubocop'][key]['severity']  == 'error'  %}
+                                                <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                            {% endif %}
+                                        <strong>Start line: </strong>{{data[row]['rubocop'][key]['start_line']}}<br/>
+                                        <strong>End line: </strong>{{data[row]['rubocop'][key]['end_line']}}<br/><br/>
+                                    {% endfor %}
+                                </p>
+                            {% else %}
+                                <p class="text-description">Not data Found</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if data[row]['extra']['programming_language'] == 'npm' %}
+                        <div class='col col_content'>
+                            <h4 class="title_category">NSJScan (Code Review): </h4>
+                            {% if data[row]['njsscan']['nodejs'] | length > 0 %}
+                                <div class="text-description">
+                                    {% for key in data[row]['njsscan']['nodejs'] %}
+                                        <strong>Description: </strong> {{ data[row]['njsscan']['nodejs'][key]['metadata']['description'] }}<br/>
+                                        <strong>CWE: </strong> {{ data[row]['njsscan']['nodejs'][key]['metadata']['cwe'] }}<br/>
+                                        <strong>OWASP: </strong> {{ data[row]['njsscan']['nodejs'][key]['metadata']['owasp'] }}<br/>
+                                        <strong>Severity: </strong>
+                                        {% if data[row]['njsscan']['nodejs'][key]['metadata']['severity'] == 'WARNING' %}
+                                            <span class="severity_important">{{ data[row]['njsscan']['nodejs'][key]['metadata']['severity'] }}</span><br/>
+                                        {% elif data[row]['njsscan']['nodejs'][key]['metadata']['severity'] == 'ERROR' %}
+                                            <span class="severity_critical">{{ data[row]['njsscan']['nodejs'][key]['metadata']['severity'] }}</span><br/>
+                                        {% endif %}<br/>
+                                        <div class="text-ca-files">
+                                            <em><strong>Rule: </strong> {{ key }}</em><br/>
+                                            {% for keyd in data[row]['njsscan']['nodejs'][key]['files'] %}
+                                                <strong>File: </strong>{{ keyd['file_path']}}<br/>
+                                                <strong>Match String: </strong>{{ keyd['match_string']}}<br/>
+                                                <strong>Match Line: </strong>{{ keyd['match_lines']}}<br/>
+                                                <strong>Match Position: </strong>{{ keyd['match_position']}}<br/><br/>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-description">Not data Found</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+
+                        <div class='col col_content'>
+                            <h4 class="title_category">App Inspector: </h4>
+                            {% if data[row]['appinspector'] | length > 0 %}
+                                <p class="text-description">
+                                    {% for key in data[row]['appinspector'] %}
+                                        <strong>File: </strong>{{data[row]['appinspector'][key]['filename']}}<br/>
+                                        <strong>Rule name: </strong>{{data[row]['appinspector'][key]['rule_name']}}<br/>
+
+                                        <strong>Confidence: </strong>
+                                            {% if data[row]['appinspector'][key]['confidence']|lower == 'high' %}
+                                                <span class="confidence_high">{{data[row]['appinspector'][key]['confidence']}}</span><br/>
+                                            {% elif data[row]['appinspector'][key]['confidence']|lower  == 'medium'  %}
+                                                <span class="confidence_medium">{{data[row]['appinspector'][key]['confidence']}}</span><br/>
+                                            {% elif data[row]['appinspector'][key]['confidence']|lower == 'low'  %}
+                                                <span class="confidence_low">{{data[row]['appinspector'][key]['confidence']}}</span><br/>
+                                            {% endif %}
+                                        <strong>Severity: </strong>
+                                            {% if data[row]['appinspector'][key]['severity']|lower == 'critical' %}
+                                            <span class="severity_critical">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                            {% elif data[row]['appinspector'][key]['severity']|lower  == 'important'  %}
+                                                <span class="severity_important">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                            {% endif %}
+                                        <strong>Sample: </strong>{{data[row]['appinspector'][key]['sample']}}<br/>
+                                        <strong>Start line: </strong>{{data[row]['appinspector'][key]['start_line']}}<br/>
+                                        <strong>End line: </strong>{{data[row]['appinspector'][key]['end_line']}}<br/>
+                                        <strong>Excerpt: </strong>{{data[row]['appinspector'][key]['excerpt']|e}}<br/><br/>
+                                    {% endfor %}
+                                </p>
+                            {% else %}
+                                <p class="text-description">Not data Found</p>
+                            {% endif %}
+                        </div>
+
+                        {% if data[row]['extra']['programming_language'] == 'go' %}
+                        <div class='col col_content'>
+                            <h4 class="title_category">Code Analysis: </h4>
+                            {% if data[row]['goscan']['results'] | length > 0 %}
+                                <p class="text-description">
+                                    {% for key in data[row]['goscan']['results'] %}
+                                        <strong>Description: </strong> {{ data[row]['goscan']['results'][key]['extra']['message'] }}<br/>
+                                        <strong>CWE: </strong> {{ data[row]['goscan']['results'][key]['extra']['metadata']['cwe'] }}<br/>
+                                        <strong>OWASP: </strong> {{ data[row]['goscan']['results'][key]['extra']['metadata']['owasp'] }}<br/>
+                                        <strong>Severity: </strong>
+                                        {% if data[row]['goscan']['results'][key]['extra']['severity'] == 'WARNING' %}
+                                            <span class="severity_important">{{ data[row]['goscan']['results'][key]['extra']['severity'] }}</span><br/>
+                                        {% elif data[row]['goscan']['results'][key]['extra']['severity'] == 'ERROR' %}
+                                            <span class="severity_critical">{{ data[row]['goscan']['results'][key]['extra']['severity'] }}</span><br/>
+                                        {% endif %}
+                                        <strong>File: </strong>{{data[row]['goscan']['results'][key]['path']}}<br/>
+                                        <strong>Rule name: </strong>{{data[row]['goscan']['results'][key]['check_id']}}<br/>
+                                        <strong>Match String: </strong>{{ data[row]['goscan']['results'][key]['extra']['lines']}}<br/>
+                                        <strong>Match Start: </strong>{{ data[row]['goscan']['results'][key]['start']}}<br/>
+                                        <strong>Match End: </strong>{{ data[row]['goscan']['results'][key]['start']}}<br/>
+                                        {% if data[row]['goscan']['results'][key]['extra']['fix'] %}
+                                            <strong>Possible Fix: </strong>{{ data[row]['goscan']['results'][key]['extra']['fix']}}<br/>
+                                        {% endif %}
+                                        <br/>
+                                    {% endfor %}
+                                </p>
+                            {% else %}
+                                <p class="text-description">Not data Found</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>CVE(s): </h4>
+                            <p class='text-description'>
+                            {% if data[row]['cves'] | length > 0 %}
+                                {% for key in data[row]['cves'] %}
+                                    <strong>{{ data[row]['cves'][key]['cve'] }}</strong> <br/>
+                                    <strong>name:</strong> {{ data[row]['cves'][key]['name'] }}<br/>
+                                    <strong>date:</strong> {{ data[row]['cves'][key]['date'] }}<br/>
+                                    <strong>severity:</strong> {{ data[row]['cves'][key]['severity'] }}<br/>
+                                    <strong>affected:</strong> {% for data_affected in data[row]['cves'][key]['affected'] %} {{ data_affected | safe }}  {% endfor %} <br/>
+                                    <strong>url:</strong><a href="{{ data[row]['cves'][key]['url'] }}" target="_blank"> {{ data[row]['cves'][key]['url'] }}</a><br/><br/>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-description">Not data Found</span>
+                            {% endif %}
+                            </p>
+                        </div>
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>Analysis Typosquatting: </h4>
+                            <p class='text-description'>
+                                {% if data[row]['typo_urls'] | length > 0 %}
+
+                                    {% for typo in data[row]['typo_urls'] %}
+                                        <strong>Package: {{ typo }} </strong><br/>
+                                        {% if data[row]['extra']['programming_language'] == 'python' %}
+                                            <strong>Home URL:</strong> <a href="{{ data[row]['typo_urls'][typo] | replace('simple','project') }}" target="_blank">{{ data[row]['typo_urls'][typo] | replace('simple','project') }}</a><br/>
+                                            <strong>Download URL:</strong> <a href="{{ data[row]['typo_urls'][typo] }}" target="_blank">{{ data[row]['typo_urls'][typo] }}</a><br/><br/>
+                                        {% else %}
+                                            <strong>Home URL:</strong> <a href="{{ data[row]['typo_urls'][typo] }}" target="_blank">{{ data[row]['typo_urls'][typo] }}</a><br/>
+                                        {% endif %}
+
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-description">Not data Found</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>Analysis VirusTotal (suspicious files): </h4>
+                            <p class='text-description'>
+                                {% if data[row]['virustotal'] | length > 0 %}
+                                    {% for vt in data[row]['virustotal'] %}
+                                        {% if vt != 'permalink' %}
+                                            <strong>{{ vt }}:</strong> {{ data[row]['virustotal'][vt] }}<br/>
+                                        {% else %}
+                                            <strong>{{ vt }}:</strong> <a href="{{ data[row]['virustotal'][vt] }}" target="_blank">{{ data[row]['virustotal'][vt] }}</a><br/>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                {% else %}
+                                    <span class="text-description">Not data Found</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class='col col_content'>
+                            <h4 class='title_category'>User Profiling Based on Repository</h4>
+                            <div class='text-description'>
+                            {% if data[row]['users'] | length > 0 %}
+                                {% for key in data[row]['users'] %}
+                                    <strong>Username:</strong> <span class="label_user_repo">{{ data[row]['users'][key]['Username'] }}</span><br/>
+                                    <strong>Name:</strong> {{ data[row]['users'][key]['Name'] }}<br/>
+                                    <strong>Repositories</strong>
+                                    {% for data_repos in data[row]['users'][key]['Repositories'] %}
+                                        <p class="p_users_profile">
+                                        {%if data[row]['users'][key]['Repositories'][data_repos]['Language'] == "Python" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-python-48.png') }}" class="icon_repo" alt="Python icon">
+                                        {%elif data[row]['users'][key]['Repositories'][data_repos]['Language'] == "Ruby" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-ruby-programming-language-48.png') }}" class="icon_repo" alt="Ruby icon">
+                                        {%elif data[row]['users'][key]['Repositories'][data_repos]['Language'] == "NPM" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-npm-48.png') }}" class="icon_repo" alt="Npm icon">
+                                        {% endif %}
+                                            <a class="link_repo" href="{{ data[row]['users'][key]['Repositories'][data_repos]['Url'] }}" target="_blank">{{ data[row]['users'][key]['Repositories'][data_repos]['Url'] }}</a> <br/>
+                                        </p>
+                                    {% endfor %}<br/>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-description">Not data Found</span>
+                            {% endif %}
+                            </div>
+                        </div>
+
+                        <br/></br/>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+            </div>
+        </section>
+    </main>
+    <footer class="footer text-center page-footer dark">
+
+        <div class="d-flex justify-content-center">
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/11paths_logo.png') }}" alt="Logo 11paths"></div>
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/logo_lab_11paths.png') }}" alt="Logo lab 11paths"></div>
+        </div>
+        <div class="footer-copyright">
+            <p>© 2021 ElevenPaths. All Rights Reserved.</p>
+        </div>
+
+    </footer>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/packagedna.js') }}"></script>
+</body>
+
+</html>

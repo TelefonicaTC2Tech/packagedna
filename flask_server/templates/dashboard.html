@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+
+<head>
+    <meta content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>PackageDNA</title>
+    <meta name="description" content="Home - PackageDNA">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/packagedna.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sticky-footer.css') }}">
+    <style>
+    .arc text { font: 12px Montserrat,sans-serif; text-anchor: middle; font-weight: bold; }
+    .arc path { stroke: #fff; }
+    .legend rect { fill:white; opacity:0.8; }
+    #graph{ padding-top: 100px; text-align: center; }
+    .rect { width: 20px; float: left; margin-right: 10px; }
+    .titles_dashboard { color: #3b99e0 !important; font-size: 1.2em; }
+    .axis{  font-family: Montserrat,sans-serif; font-weight: bold; font-size: 11px;}
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
+        <div class="container"><a class="navbar-brand logo title_brand" href="/" style="color: rgb(38,28,119);font-weight: bold;">PackageDNA</a><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item" role="dashboard"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item" role="compare"><a class="nav-link active" href="/compare">Compare Packages</a></li>
+                    <li class="nav-item" role="about"><a class="nav-link active" href="#">About Us</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="page">
+        <section class="clean-block about-us">
+            <div id="graph" class="container">
+                <script src="{{ url_for('static', filename='js/d3.v5.min.js') }}"></script>
+                <script src="{{ url_for('static', filename='js/d3.legend.js') }}"></script>
+                <p class="titles_dashboard">Summary of Packages Analyzed</p>
+                <div id="chart"></div><br/><br/><br/><p class="titles_dashboard">Top 10 Issues for Repo (Package)</p>
+                <div id="chart2"></div><br/><br/>
+            </div>
+            <script>
+    var svg2 = d3.select("#chart").append("svg").attr("width", 700).attr("height", 400),
+    width = +svg2.attr("width"),
+    height = +svg2.attr("height"),
+    radius = Math.min(width, height) / 2,
+    g2 = svg2.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var color = d3.scaleOrdinal(["#ff8c00", "#8a89a6", "#2980b9", "#5fda64"]);
+
+var pie = d3.pie()
+    .sort(null)
+    .value(function(d) { return d.totalpkgs; });
+
+var path = d3.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(radius - 70);
+
+var label = d3.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+
+d3.json("/get-json").then(function(d) {
+  data = d;
+
+  var arc = g2.selectAll(".arc")
+    .data(pie(data))
+    .enter().append("g")
+      .attr("class", "arc");
+
+  arc.append("path")
+      .attr("d", path)
+      .attr("data-legend",function(d) { return d.data.repo})
+      .attr("fill", function(d) { return color(d.data.totalpkgs); });
+
+  arc.append("text")
+      .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+      .attr("dy", "0.35em")
+      .text(function(d) { return d.data.totalpkgs; });
+
+legend2 = svg2.append("g")
+  .attr("class","legend")
+  .attr("transform","translate(50,30)")
+  .style("font-size","14px")
+  .call(d3.legend);
+
+  setTimeout(function() {
+    legend2
+      .style("font-size","14px")
+      .attr("data-style-padding",10)
+      .call(d3.legend)
+  },10)
+
+});
+
+
+
+var svg = d3.select("#chart2").append("svg").attr("width", 700).attr("height", 400),
+            margin = { top: 20, right: 20, bottom: 30, left: 40 },
+            width = +svg.attr("width") - margin.left - margin.right,
+            height = +svg.attr("height") - margin.top - margin.bottom,
+            g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var x0 = d3.scaleBand()
+            .rangeRound([0, width])
+            .paddingInner(0.1);
+
+        var x1 = d3.scaleBand()
+            .padding(0.05);
+
+        var y = d3.scaleLinear()
+            .rangeRound([height, 0]);
+
+        var z = d3.scaleOrdinal()
+            .range(["#5fda64","#16A085", "#8a89a6","#2980b9","#a05d56", "#DB0000", "#ff8c00"]);
+
+d3.json("/get-json2").then(function(d) {
+        data = d;
+        var keys = Object.keys(data[0]).slice(1);
+
+        x0.domain(data.map(function (d) { return d.Repo; }));
+        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+        y.domain([0, d3.max(data, function (d) { return d3.max(keys, function (key) { return d[key]; }); })]).nice();
+
+        g.append("g")
+            .selectAll("g")
+            .data(data)
+            .enter().append("g")
+            .attr("transform", function (d) { return "translate(" + x0(d.Repo) + ",0)"; })
+            .selectAll("rect")
+            .data(function (d) {
+            return keys.map(function (key) {
+            	return { key: key, value: d[key] };
+             	});
+             })
+            .enter().append("rect")
+            .attr("x", function (d) { return x1(d.key); })
+            .attr("y", function (d) { return y(d.value); })
+            .attr("width", x1.bandwidth())
+            .attr("height", function (d) { return height - y(d.value); })
+            .attr("fill", function (d) { return z(d.key); });
+
+        g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x0));
+
+        g.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.2em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+            .text("");
+
+        var legend = g.append("g")
+            .attr("font-family", "Montserrat,sans-serif")
+            .attr("font-size", 12)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+
+        legend.append("rect")
+            .attr("x", width - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("font-family", "Montserrat,sans-serif")
+            .attr("fill", z);
+
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.2em")
+            .text(function (d) { return d; });
+});
+
+            </script>
+        </section>
+    </main>
+    <footer class="footer text-center page-footer dark">
+
+        <div class="d-flex justify-content-center">
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/11paths_logo.png') }}" alt="Logo 11paths"></div>
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/logo_lab_11paths.png') }}" alt="Logo lab 11paths"></div>
+        </div>
+        <div class="footer-copyright">
+            <p>© 2021 ElevenPaths. All Rights Reserved.</p>
+        </div>
+
+    </footer>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/packagedna.js') }}"></script>
+</body>
+
+</html>

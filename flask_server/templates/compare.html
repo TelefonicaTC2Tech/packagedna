@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+
+<head>
+    <meta content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>PackageDNA</title>
+    <meta name="description" content="Home - PackageDNA">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/packagedna.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sticky-footer.css') }}">
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar">
+        <div class="container"><a class="navbar-brand logo title_brand" href="/" style="color: rgb(38,28,119);font-weight: bold;">PackageDNA</a><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div
+                class="collapse navbar-collapse" id="navcol-1">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item" role="dashboard"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item" role="compare"><a class="nav-link active" href="/compare">Compare Packages</a></li>
+                    <li class="nav-item" role="about"><a class="nav-link active" href="#">About Us</a></li>
+                </ul>
+        </div>
+        </div>
+    </nav>
+    <main class="page">
+        <section class="clean-block about-us">
+            <div class="container">
+                <div class="block-heading">
+                    <h2 class="text-info">Package: {{ package_name }}</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row justify-content-center" style="display: block;">
+                                <div class="col">
+                                    <select id="select_pkg1" name="select_pkg1">
+                                        <option value="0">Select Version</option>
+                                        {% for key in data_keys %}
+                                            {% if key != "changes_pkg" %}
+                                                <option value={{ key | replace('.', '__') }}>{{ key }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row justify-content-center" style="display: block;">
+                                <select id="select_pkg2" name="select_pkg2">
+                                    <option value="0">Select Version</option>
+                                    {% for key in data_keys %}
+                                        {% if key != "changes_pkg" %}
+                                            <option value={{ key | replace('.', '__') }}>{{ key }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col"><button class="btn btn-primary" type="button" id="select_cmp">Compare</button></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <span id="alert_message" class="label_red"></span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-6" id="grp_pkg1">
+
+                        {% for row in data %}
+                            {% if row != 'changes_pkg' %}
+
+                            <div class="col dinamic_div" id="{{ row | replace('.', '__')}}">
+                                <div class="row justify-content-center" style="display: block;">
+                                    <div class="col">
+                                        <h3 class="text-info">{{ row + " " + data[row]['name'] }}</h3>
+                                    </div>
+                                </div>
+                                <div role="tablist" id="accordion-{{ row | replace('.', '__')}}">
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="true" aria-controls="accordion-{{ row | replace('.', '__')}} .item-1" href="div#accordion-{{ row | replace('.', '__')}} .item-1" class="title_category">Metadata</a></h5>
+                                        </div>
+                                        <div class="collapse show item-1" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+
+                                                    <strong>Author: </strong>
+                                                    <span id="chg_author">{{ data[row]['author'] }}</span><br />
+
+                                                    <strong>Email: </strong>
+                                                    <span id="chg_author_email">{{ data[row]['author_email'] }}</span><br />
+
+                                                    <strong>Date: </strong>
+                                                    <span id="chg_author_date">{{ data[row]['date'] }}</span><br />
+
+                                                    <strong>License: </strong>
+                                                    <span id="chg_author_license">{{ data[row]['license'] }}</span><br />
+
+                                                    <strong>Home Page: </strong>
+                                                    <span id="chg_home_page">{{ data[row]['home_page'] }}</span><br/>
+
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-5" href="div#accordion-{{ row | replace('.', '__')}} .item-5" class="title_category">Hash Files</a></h5>
+                                        </div>
+                                        <div class="collapse item-5" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+
+                                                    {% for hash in data[row]['hash_files'] %}
+                                                        <strong>{{ hash }}: </strong>
+                                                        <span class="label_black">{{ data[row]['hash_files'][hash] }}</span><br />
+                                                    {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    {% if data[row]['extra']['programming_language'] == 'python' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0">
+                                                <a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-2" href="div#accordion-{{ row | replace('.', '__')}} .item-2" class="title_category">Dangerous Functions</a>
+                                            </h5>
+                                        </div>
+                                        <div class="collapse item-2" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['dangerous_function'] | length > 0 %}
+
+                                                    {% for dang_function in data[row]['dangerous_function'] %}
+                                                        {% if dang_function == 'dangerous_functions' %}
+                                                            <strong>{{ dang_function }}: </strong><br />
+                                                            {% for line in data[row]['dangerous_function'][dang_function] %}
+                                                                <span>{{ line }}</span><br />
+                                                            {% endfor %}
+                                                        {% elif dang_function == 'file'  %}
+                                                            <strong>{{ dang_function }}: </strong>{{ data[row]['dangerous_function'][dang_function] }}<br />
+                                                        {% endif %}
+                                                    {% endfor %}
+
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if data[row]['extra']['programming_language'] == 'python' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0">
+                                                <a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-3" href="div#accordion-{{ row | replace('.', '__')}} .item-3" class="title_category">Bandit (Code Review)</a>
+                                            </h5>
+                                        </div>
+                                        <div class="collapse item-3" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['bandit']['results'] | length > 0 %}
+                                                        {% for key in data[row]['bandit']['results'] %}
+                                                        <div class="text-description">
+                                                            <strong>Filename: </strong>{{ data[row]['bandit']['results'][key]['filename'] }}<br/>
+                                                            <strong>Issue Confidence: </strong>
+                                                            {% if data[row]['bandit']['results'][key]['issue_confidence'] == 'HIGH' %}
+                                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'MEDIUM' %}
+                                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'LOW' %}
+                                                                <span class="confidence_low">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% endif %}
+                                                            <strong>Issue Severity: </strong>
+                                                            {% if data[row]['bandit']['results'][key]['issue_severity'] == 'HIGH' %}
+                                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_severity'] == 'MEDIUM' %}
+                                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_severity'] == 'LOW' %}
+                                                                <span class="confidence_low">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% endif %}
+                                                            <strong>Issue: </strong>{{ data[row]['bandit']['results'][key]['issue_text'] }}<br/>
+                                                            <strong>Line Number: </strong>{{ data[row]['bandit']['results'][key]['line_number'] }}<br/>
+                                                            <strong>Test ID: </strong>{{ data[row]['bandit']['results'][key]['test_id'] }}<br/>
+                                                            <strong>Test Name: </strong>{{ data[row]['bandit']['results'][key]['test_name'] }} <br/>
+                                                            <strong>Reference: </strong><a href="{{ data[row]['bandit']['results'][key]['more_info'] }}" target="_blank">{{ data[row]['bandit']['results'][key]['more_info'] }}</a><br/>
+                                                            <strong>Code: </strong>{{ data[row]['bandit']['results'][key]['code']|safe }}<br/>
+                                                        </div><br/>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if data[row]['extra']['programming_language'] == 'ruby' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-4" href="div#accordion-{{ row | replace('.', '__')}} .item-4" class="title_category">Rubocop (Code Review)</a></h5>
+                                        </div>
+                                        <div class="collapse item-4" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% for key in data[row]['rubocop'] %}
+
+                                                    <strong>File: </strong>{{data[row]['rubocop'][key]['filename']}}<br />
+                                                    <strong>Rule name: </strong>{{data[row]['rubocop'][key]['rule_name']}}<br />
+                                                    <strong>Message: </strong>{{data[row]['rubocop'][key]['message']|safe}}<br />
+                                                    <strong>Severity: </strong>
+                                                        {% if data[row]['rubocop'][key]['severity'] == 'warning' %}
+                                                            <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% elif data[row]['rubocop'][key]['severity']  == 'fatal'  %}
+                                                            <span class="severity_critical">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% elif data[row]['rubocop'][key]['severity']  == 'error'  %}
+                                                            <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% endif %}
+                                                    <strong>Start line: </strong>{{data[row]['rubocop'][key]['start_line']}}<br />
+                                                    <strong>End line: </strong>{{data[row]['rubocop'][key]['end_line']}}<br /><br />
+                                                    {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-6" href="div#accordion-{{ row | replace('.', '__')}} .item-6" class="title_category">Data Collected</a></h5>
+                                        </div>
+                                        <div class="collapse item-6" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% for key in data[row]['data_collected'] %}
+                                                    <strong>{{ key }}</strong><br />
+                                                        {% for row in data[row]['data_collected'][key] %}
+                                                            <span class="label_black">{{ row }}</span><br />
+                                                        {% endfor %}
+                                                    {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-7" href="div#accordion-{{ row | replace('.', '__')}} .item-7" class="title_category">App Inpsector</a></h5>
+                                        </div>
+                                        <div class="collapse item-7" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['appinspector'] | length > 0 %}
+
+                                                        {% for key in data[row]['appinspector'] %}
+                                                        <strong>File: </strong>{{data[row]['appinspector'][key]['filename']}}<br />
+                                                        <strong>Rule name: </strong>{{data[row]['appinspector'][key]['rule_name']}}<br />
+                                                        <strong>Confidence: </strong>
+                                                            {% if data[row]['appinspector'][key]['confidence']|lower == 'high' %}
+                                                                <span class="confidence_high">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% elif data[row]['appinspector'][key]['confidence']|lower  == 'medium'  %}
+                                                                <span class="confidence_medium">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% elif data[row]['appinspector'][key]['confidence']|lower  == 'low'  %}
+                                                                <span class="confidence_low">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% endif %}
+                                                        <strong>Severity: </strong>
+                                                            {% if data[row]['appinspector'][key]['severity']|lower == 'critical' %}
+                                                                <span class="severity_critical">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                                            {% elif data[row]['appinspector'][key]['severity']|lower  == 'important'  %}
+                                                                <span class="severity_important">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                                            {% endif %}
+                                                        <strong>Sample: </strong>{{data[row]['appinspector'][key]['sample']}}<br />
+                                                        <strong>Start line: </strong>{{data[row]['appinspector'][key]['start_line']}}<br />
+                                                        <strong>End line: </strong>{{data[row]['appinspector'][key]['end_line']}}<br />
+                                                        <strong>Excerpt: </strong>{{data[row]['appinspector'][key]['excerpt']|e}}<br /><br />
+
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-8" href="div#accordion-{{ row | replace('.', '__')}} .item-8" class="title_category">Analysis VirusTotal (suspicious files)</a></h5>
+                                        </div>
+                                        <div class="collapse item-8" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+
+                                                {% if data[row]['virustotal'] | length > 0 %}
+                                                    {% for vt in data[row]['virustotal'] %}
+                                                        {% if vt != 'permalink' %}
+                                                            <strong>{{ vt }}:</strong> {{ data[row]['virustotal'][vt] }}<br/>
+                                                        {% else %}
+                                                            <strong>{{ vt }}:</strong> <a href="{{ data[row]['virustotal'][vt] }}" target="_blank">{{ data[row]['virustotal'][vt] }}</a><br/>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-description">Not data Found</span>
+                                                {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion-{{ row | replace('.', '__')}} .item-9" href="div#accordion-{{ row | replace('.', '__')}} .item-9" class="title_category">CVEs</a></h5>
+                                        </div>
+                                        <div class="collapse item-9" role="tabpanel" data-parent="#accordion-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                {% if data[row]['cves'] | length > 0 %}
+                                                    {% for key in data[row]['cves'] %}
+                                                        <strong>{{ data[row]['cves'][key]['cve'] }}</strong> <br/>
+                                                        <strong>name:</strong> {{ data[row]['cves'][key]['name'] }}<br/>
+                                                        <strong>date:</strong> {{ data[row]['cves'][key]['date'] }}<br/>
+                                                        <strong>severity:</strong> {{ data[row]['cves'][key]['severity'] }}<br/>
+                                                        <strong>affected:</strong> {{ data[row]['cves'][key]['affected']|safe }}<br/>
+                                                        <strong>url:</strong><a href="{{ data[row]['cves'][key]['url'] }}" target="_blank"> {{ data[row]['cves'][key]['url'] }}</a><br/><br/>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-description">Not data Found</span>
+                                                {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+                    <div class="col-md-6" id="grp_pkg2">
+
+                        {% for row in data %}
+
+                            {% if row != 'changes_pkg' %}
+
+                            <div class="col compare_div" id="{{ row | replace('.', '__')}}">
+                                <div class="row justify-content-center" style="display: block;">
+                                    <div class="col">
+                                        <h3 class="text-info">{{ row + " " + data[row]['name'] }}</h3>
+                                    </div>
+                                </div>
+
+
+                                <div role="tablist" id="accordion2-{{ row | replace('.', '__')}}">
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="true" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-1" href="div#accordion2-{{ row | replace('.', '__')}} .item-1" class="title_category">Metadata</a></h5>
+                                        </div>
+                                        <div class="collapse show item-1" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                <strong>Author: </strong>
+                                                <span id="chg_author">{{ data[row]['author'] }}</span><br />
+
+                                                <strong>Email: </strong>
+                                                <span id="chg_author_email">{{ data[row]['author_email'] }}</span><br />
+
+                                                    <strong>Date: </strong>
+                                                    <span id="chg_author_date">{{ data[row]['date'] }}</span><br />
+
+                                                    <strong>License: </strong>
+                                                    <span id="chg_author_license">{{ data[row]['license'] }}</span><br />
+
+                                                <strong>Home Page: </strong>
+                                                <span id="chg_home_page">{{ data[row]['home_page'] }}</span><br/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-5" href="div#accordion2-{{ row | replace('.', '__')}} .item-5" class="title_category">Hash Files</a></h5>
+                                        </div>
+                                        <div class="collapse item-5" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% for hash in data[row]['hash_files'] %}
+                                                    <strong>{{ hash }}: </strong>
+                                                    <span class="label_black">{{ data[row]['hash_files'][hash] }}</span><br />
+                                                    {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if data[row]['extra']['programming_language'] == 'python' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0">
+                                                <a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-2" href="div#accordion2-{{ row | replace('.', '__')}} .item-2" class="title_category">Dangerous Functions</a>
+                                            </h5>
+                                        </div>
+                                        <div class="collapse item-2" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['dangerous_function'] | length > 0 %}
+
+                                                    {% for dang_function in data[row]['dangerous_function'] %}
+                                                        {% if dang_function == 'dangerous_functions' %}
+                                                            <strong>{{ dang_function }}: </strong><br />
+                                                            {% for line in data[row]['dangerous_function'][dang_function] %}
+                                                                <span>{{ line }}</span><br />
+                                                            {% endfor %}
+                                                        {% elif dang_function == 'file'  %}
+                                                            <strong>{{ dang_function }}: </strong>{{ data[row]['dangerous_function'][dang_function] }}<br />
+                                                        {% endif %}
+                                                    {% endfor %}
+
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if data[row]['extra']['programming_language'] == 'python' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0">
+                                                <a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-2" href="div#accordion2-{{ row | replace('.', '__')}} .item-3" class="title_category">Bandit (Code Review)</a>
+                                            </h5>
+                                        </div>
+                                        <div class="collapse item-3" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['bandit']['results'] | length > 0 %}
+                                                        {% for key in data[row]['bandit']['results'] %}
+                                                        <div class="text-description">
+                                                            <strong>Filename: </strong>{{ data[row]['bandit']['results'][key]['filename'] }}<br/>
+                                                            <strong>Issue Confidence: </strong>
+                                                            {% if data[row]['bandit']['results'][key]['issue_confidence'] == 'HIGH' %}
+                                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'MEDIUM' %}
+                                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_confidence'] == 'LOW' %}
+                                                                <span class="confidence_low">{{ data[row]['bandit']['results'][key]['issue_confidence'] }}</span><br/>
+                                                            {% endif %}
+                                                            <strong>Issue Severity: </strong>
+                                                            {% if data[row]['bandit']['results'][key]['issue_severity'] == 'HIGH' %}
+                                                                <span class="confidence_high">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_severity'] == 'MEDIUM' %}
+                                                                <span class="confidence_medium">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% elif data[row]['bandit']['results'][key]['issue_severity'] == 'LOW' %}
+                                                                <span class="confidence_low">{{ data[row]['bandit']['results'][key]['issue_severity'] }}</span><br/>
+                                                            {% endif %}
+                                                            <strong>Issue: </strong>{{ data[row]['bandit']['results'][key]['issue_text'] }}<br/>
+                                                            <strong>Line Number: </strong>{{ data[row]['bandit']['results'][key]['line_number'] }}<br/>
+                                                            <strong>Test ID: </strong>{{ data[row]['bandit']['results'][key]['test_id'] }}<br/>
+                                                            <strong>Test Name: </strong>{{ data[row]['bandit']['results'][key]['test_name'] }} <br/>
+                                                            <strong>Reference: </strong><a href="{{ data[row]['bandit']['results'][key]['more_info'] }}" target="_blank">{{ data[row]['bandit']['results'][key]['more_info'] }}</a><br/>
+                                                            <strong>Code: </strong>{{ data[row]['bandit']['results'][key]['code']|safe }}<br/>
+                                                        </div><br/>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if data[row]['extra']['programming_language'] == 'ruby' %}
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-4" href="div#accordion2-{{ row | replace('.', '__')}} .item-4" class="title_category">Rubocop (Code Review)</a></h5>
+                                        </div>
+                                        <div class="collapse item-4" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% for key in data[row]['rubocop'] %}
+
+                                                    <strong>File: </strong>{{data[row]['rubocop'][key]['filename']}}<br />
+                                                    <strong>Rule name: </strong>{{data[row]['rubocop'][key]['rule_name']}}<br />
+                                                    <strong>Message: </strong>{{data[row]['rubocop'][key]['message']|safe}}<br />
+                                                    <strong>Severity: </strong>
+                                                        {% if data[row]['rubocop'][key]['severity'] == 'warning' %}
+                                                            <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% elif data[row]['rubocop'][key]['severity']  == 'fatal'  %}
+                                                            <span class="severity_critical">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% elif data[row]['rubocop'][key]['severity']  == 'error'  %}
+                                                            <span class="severity_important">{{data[row]['rubocop'][key]['severity']}}</span><br/>
+                                                        {% endif %}<br/>
+                                                    <strong>Start line: </strong>{{data[row]['rubocop'][key]['start_line']}}<br />
+                                                    <strong>End line: </strong>{{data[row]['rubocop'][key]['end_line']}}<br /><br/>
+                                            {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-6" href="div#accordion2-{{ row | replace('.', '__')}} .item-6" class="title_category">Data Collected</a></h5>
+                                        </div>
+                                        <div class="collapse item-6" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                {% for key in data[row]['data_collected'] %}
+                                                        <strong>{{ key }}</strong><br />
+                                                        {% for row in data[row]['data_collected'][key] %}
+                                                            <span class="label_black">{{ row }}</span><br />
+                                                        {% endfor %}
+                                                {% endfor %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-7" href="div#accordion2-{{ row | replace('.', '__')}} .item-7" class="title_category">App Inspector</a></h5>
+                                        </div>
+                                        <div class="collapse item-7" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if data[row]['appinspector'] | length > 0 %}
+
+                                                        {% for key in data[row]['appinspector'] %}
+
+                                                        <strong>File: </strong>{{data[row]['appinspector'][key]['filename']}}<br />
+                                                        <strong>Rule name: </strong>{{data[row]['appinspector'][key]['rule_name']}}<br />
+                                                        <strong>Confidence: </strong>
+                                                            {% if data[row]['appinspector'][key]['confidence']|lower == 'high' %}
+                                                                <span class="confidence_high">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% elif data[row]['appinspector'][key]['confidence']|lower  == 'medium'  %}
+                                                                <span class="confidence_medium">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% elif data[row]['appinspector'][key]['confidence']|lower  == 'low'  %}
+                                                                <span class="confidence_low">{{data[row]['appinspector'][key]['confidence']}}</span><br />
+                                                            {% endif %}
+                                                        <strong>Severity: </strong>
+                                                            {% if data[row]['appinspector'][key]['severity']|lower == 'critical' %}
+                                                                <span class="severity_critical">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                                            {% elif data[row]['appinspector'][key]['severity']|lower  == 'important'  %}
+                                                                <span class="severity_important">{{data[row]['appinspector'][key]['severity']}}</span><br/>
+                                                            {% endif %}
+                                                        <strong>Sample: </strong>{{data[row]['appinspector'][key]['sample']}}<br />
+                                                        <strong>Start line: </strong>{{data[row]['appinspector'][key]['start_line']}}<br />
+                                                        <strong>End line: </strong>{{data[row]['appinspector'][key]['end_line']}}<br />
+                                                        <strong>Excerpt: </strong>{{data[row]['appinspector'][key]['excerpt']|e}}<br /><br />
+
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="text-description">Not data Found</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-8" href="div#accordion2-{{ row | replace('.', '__')}} .item-8" class="title_category">Analysis VirusTotal (suspicious files)</a></h5>
+                                        </div>
+                                        <div class="collapse item-8" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+
+                                                {% if data[row]['virustotal'] | length > 0 %}
+                                                    {% for vt in data[row]['virustotal'] %}
+                                                        {% if vt != 'permalink' %}
+                                                            <strong>{{ vt }}:</strong> {{ data[row]['virustotal'][vt] }}<br/>
+                                                        {% else %}
+                                                            <strong>{{ vt }}:</strong> <a href="{{ data[row]['virustotal'][vt] }}" target="_blank">{{ data[row]['virustotal'][vt] }}</a><br/>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-description">Not data Found</span>
+                                                {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header" role="tab">
+                                            <h5 class="mb-0"><a data-toggle="collapse" aria-expanded="false" aria-controls="accordion2-{{ row | replace('.', '__')}} .item-9" href="div#accordion2-{{ row | replace('.', '__')}} .item-9" class="title_category">CVEs</a></h5>
+                                        </div>
+                                        <div class="collapse item-9" role="tabpanel" data-parent="#accordion2-{{ row | replace('.', '__')}}">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                {% if data[row]['cves'] | length > 0 %}
+                                                    {% for key in data[row]['cves'] %}
+                                                        <strong>{{ data[row]['cves'][key]['cve'] }}</strong> <br/>
+                                                        <strong>name:</strong> {{ data[row]['cves'][key]['name'] }}<br/>
+                                                        <strong>date:</strong> {{ data[row]['cves'][key]['date'] }}<br/>
+                                                        <strong>severity:</strong> {{ data[row]['cves'][key]['severity'] }}<br/>
+                                                        <strong>affected:</strong> {{ data[row]['cves'][key]['affected']|safe }}<br/>
+                                                        <strong>url:</strong><a href="{{ data[row]['cves'][key]['url'] }}" target="_blank"> {{ data[row]['cves'][key]['url'] }}</a><br/><br/>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-description">Not data Found</span>
+                                                {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+                <div id="cve_typo_details" class="dinamic_div_details">
+                    <div id="divider"></div><br/>
+                    <div class='col col_content'>
+                        <h4 class='title_category'>User Profiling Based on Repository: </h4>
+                        <div class='text-description'>
+                            {% if data[data_keys[0]]['users'] | length > 0 %}
+                            {% for key in data[data_keys[0]]['users'] %}
+                                <strong>Username:</strong> <span class="label_user_repo">{{ data[data_keys[0]]['users'][key]['Username'] }}</span><br/>
+                                <strong>Name:</strong> {{ data[data_keys[0]]['users'][key]['Name'] }}<br/>
+                                <strong>Repositories</strong>
+                                {% for data_repos in data[data_keys[0]]['users'][key]['Repositories'] %}
+                                    <p class='p_users_profile'>
+                                        {%if data[data_keys[0]]['users'][key]['Repositories'][data_repos]['Language'] == "Python" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-python-48.png') }}" class="icon_repo" alt="Python icon">
+                                        {% elif data[data_keys[0]]['users'][key]['Repositories'][data_repos]['Language'] == "Ruby" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-ruby-programming-language-48.png') }}" class="icon_repo" alt="Ruby icon">
+                                        {% elif data[data_keys[0]]['users'][key]['Repositories'][data_repos]['Language'] == "NPM" %}
+                                            <img src="{{ url_for('static', filename='img/icons8-npm-48.png') }}" class="icon_repo" alt="Npm icon">
+                                        {% endif %}
+                                        <a class="link_repo" href="{{ data[data_keys[0]]['users'][key]['Repositories'][data_repos]['Url'] }}" target="_blank">{{ data[data_keys[0]]['users'][key]['Repositories'][data_repos]['Url'] }}</a> <br/>
+                                    </p>
+                                {% endfor %}<br/>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-description">Not data Found</span><br/><br/>
+                        {% endif %}
+                        </div>
+                    </div>
+
+                    <div class='col col_content'>
+                        <h4 class='title_category'>Analysis Typosquatting: </h4>
+                        <p class='text-description'>
+                            {% if data[data_keys[0]]['typo_urls'] | length > 0 %}
+
+                                {% for typo in data[data_keys[0]]['typo_urls'] %}
+                                    <strong>Package: {{ typo }} </strong><br/>
+                                    {% if data[data_keys[0]]['extra']['programming_language'] == 'python' %}
+                                        <strong>Home URL:</strong> <a href="{{ data[data_keys[0]]['typo_urls'][typo] | replace('simple','project') }}" target="_blank">{{ data[data_keys[0]]['typo_urls'][typo] | replace('simple','project') }}</a><br/>
+                                        <strong>Download URL:</strong> <a href="{{ data[data_keys[0]]['typo_urls'][typo] }}" target="_blank">{{ data[data_keys[0]]['typo_urls'][typo] }}</a><br/><br/>
+                                    {% else %}
+                                        <strong>Home URL:</strong> <a href="{{ data[data_keys[0]]['typo_urls'][typo] }}" target="_blank">{{ data[data_keys[0]]['typo_urls'][typo] }}</a><br/><br/>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-description">Not data Found</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <br/><br/>
+
+                </div>
+
+            </div>
+        </section>
+    </main>
+    <footer class="footer text-center page-footer dark">
+
+        <div class="d-flex justify-content-center">
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/11paths_logo.png') }}" alt="Logo 11paths"></div>
+            <div class="d-flex"><img class="img-fluid logo_lab" src="{{ url_for('static', filename='img/logo_lab_11paths.png') }}" alt="Logo lab 11paths"></div>
+        </div>
+        <div class="footer-copyright">
+            <p>© 2021 ElevenPaths. All Rights Reserved.</p>
+        </div>
+
+    </footer>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <script src="{{ url_for('static', filename='js/packagedna_compare.js') }}"></script>
+</body>
+
+</html>
