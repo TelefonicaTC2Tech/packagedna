@@ -124,7 +124,3 @@ Usage: python3 ./packagedna.py
 [*] -------------------------------------------------------------------------------------------------------------- [*]
 [!] Enter your selection: 
 ```
-
-### More info
-
-**Wiki:** [https://innovation-gitlab.e-paths.com/private/packagedna/-/wikis/PackageDNA](https://innovation-gitlab.e-paths.com/private/packagedna/-/wikis/PackageDNA)
